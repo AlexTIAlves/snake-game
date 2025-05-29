@@ -51,7 +51,7 @@
   <div id="snake-game-container">
     <canvas id="snake-game" width="300" height="300"></canvas>
     <div id="snake-score">Score: 0</div>
-    <button onclick="startSnakeGame()">Reiniciar</button>
+    <button onclick="startSnakeGame()">Jogar</button>
   </div>
   <script>
     let canvas = document.getElementById('snake-game');
@@ -148,10 +148,10 @@
       gameInterval = setInterval(moveSnake, 100);
     }
 
-    // Inicia o jogo automaticamente ao carregar
+    // Não inicia automaticamente
     resetSnakeGame();
     drawSnakeGame();
-    gameInterval = setInterval(moveSnake, 100);
+    // Só inicia ao clicar em "Jogar"
   </script>
 </body>
 </html>
