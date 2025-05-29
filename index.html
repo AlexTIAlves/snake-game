@@ -11,12 +11,27 @@
       margin-top: 40px;
     }
     #snake-game-container {
-      display: inline-block;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       background: #fff;
-      padding: 24px;
+      padding: 24px 12px 24px 12px;
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(60,60,60,0.12);
       border: 1px solid #eee;
+      min-width: 320px;
+      max-width: 340px;
+    }
+    #player-name {
+      padding: 6px;
+      border-radius: 5px;
+      border: 1px solid #aaa;
+      width: 90%;
+      max-width: 210px;
+      margin-bottom: 14px;
+      margin-top: 4px;
+      font-size: 16px;
+      box-sizing: border-box;
     }
     #snake-game {
       border: 2px solid #555;
@@ -42,7 +57,11 @@
       font-size: 16px;
       transition: background 0.2s;
     }
-    button:hover {
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    button:hover:enabled {
       background: #228522;
     }
     #snake-ranking {
@@ -53,25 +72,18 @@
       margin-left: auto;
       margin-right: auto;
     }
-    #player-name {
-      padding:6px;
-      border-radius:5px;
-      border:1px solid #aaa;
-      width:170px;
-      margin-bottom:10px;
-    }
   </style>
 </head>
 <body>
   <div id="snake-game-container">
-    <input type="text" id="player-name" placeholder="Seu nome" maxlength="20">
+    <input type="text" id="player-name" placeholder="Seu nome" maxlength="20" autocomplete="off">
     <canvas id="snake-game" width="300" height="300"></canvas>
     <div id="snake-score">Score: 0</div>
-    <button onclick="startSnakeGame()">Jogar</button>
+    <button id="play-btn" onclick="startSnakeGame()" disabled>Jogar</button>
     <div id="snake-ranking"></div>
   </div>
   <script>
-    // Seu endpoint do SheetDB.io
+    // Endpoint do SheetDB.io
     const SHEETDB_API = "https://sheetdb.io/api/v1/nksxkda9sr8py";
 
     let canvas = document.getElementById('snake-game');
@@ -82,6 +94,13 @@
     let food = {};
     let score = 0;
     let gameInterval;
+
+    // Campo obrigatório: só ativa botão se tiver nome
+    const playerNameInput = document.getElementById('player-name');
+    const playBtn = document.getElementById('play-btn');
+    playerNameInput.addEventListener('input', function() {
+      playBtn.disabled = playerNameInput.value.trim().length === 0;
+    });
 
     function resetSnakeGame() {
       snake = [];
@@ -172,7 +191,7 @@
 
     // Salva score no SheetDB
     function saveScore() {
-      const player = document.getElementById("player-name").value.trim() || "Anônimo";
+      const player = playerNameInput.value.trim() || "Anônimo";
       fetch(SHEETDB_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -186,8 +205,8 @@
         .then(res => res.json())
         .then(data => {
           let html = "<h3>Ranking</h3><ol>";
-          data.forEach(r => {
-            html += `<li>${r.nome || "Anônimo"}: <b>${r.score}</b></li>`;
+          data.forEach((r, i) => {
+            html += `<li>${i + 1}. ${r.nome || "Anônimo"}: <b>${r.score}</b></li>`;
           });
           html += "</ol>";
           document.getElementById('snake-ranking').innerHTML = html;
@@ -197,7 +216,7 @@
     // Não inicia automaticamente
     resetSnakeGame();
     drawSnakeGame();
-    showRanking(); // mostra o ranking ao abrir a página
+    showRanking();
 
   </script>
 </body>
