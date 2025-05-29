@@ -45,15 +45,35 @@
     button:hover {
       background: #228522;
     }
+    #snake-ranking {
+      margin-top: 18px;
+      font-size: 16px;
+      text-align: left;
+      max-width: 260px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #player-name {
+      padding:6px;
+      border-radius:5px;
+      border:1px solid #aaa;
+      width:170px;
+      margin-bottom:10px;
+    }
   </style>
 </head>
 <body>
   <div id="snake-game-container">
+    <input type="text" id="player-name" placeholder="Seu nome" maxlength="20">
     <canvas id="snake-game" width="300" height="300"></canvas>
     <div id="snake-score">Score: 0</div>
     <button onclick="startSnakeGame()">Jogar</button>
+    <div id="snake-ranking"></div>
   </div>
   <script>
+    // Seu endpoint do SheetDB.io
+    const SHEETDB_API = "https://sheetdb.io/api/v1/nksxkda9sr8py";
+
     let canvas = document.getElementById('snake-game');
     let ctx = canvas.getContext('2d');
     let box = 15;
@@ -108,6 +128,8 @@
         clearInterval(gameInterval);
         setTimeout(() => {
           alert('Game Over! Pontuação: ' + score);
+          saveScore();
+          showRanking();
         }, 100);
         return;
       }
@@ -148,10 +170,35 @@
       gameInterval = setInterval(moveSnake, 100);
     }
 
+    // Salva score no SheetDB
+    function saveScore() {
+      const player = document.getElementById("player-name").value.trim() || "Anônimo";
+      fetch(SHEETDB_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: [{ nome: player, score: score }] })
+      });
+    }
+
+    // Mostra o ranking dos 5 melhores
+    function showRanking() {
+      fetch(SHEETDB_API + "?sort_by=score&sort_order=desc&limit=5")
+        .then(res => res.json())
+        .then(data => {
+          let html = "<h3>Ranking</h3><ol>";
+          data.forEach(r => {
+            html += `<li>${r.nome || "Anônimo"}: <b>${r.score}</b></li>`;
+          });
+          html += "</ol>";
+          document.getElementById('snake-ranking').innerHTML = html;
+        });
+    }
+
     // Não inicia automaticamente
     resetSnakeGame();
     drawSnakeGame();
-    // Só inicia ao clicar em "Jogar"
+    showRanking(); // mostra o ranking ao abrir a página
+
   </script>
 </body>
 </html>
